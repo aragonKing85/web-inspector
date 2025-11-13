@@ -1,16 +1,30 @@
-<!-- demo.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Demo Inspector</title>
+  <meta charset="UTF-8" />
+  <title></title>
+<meta name="description" content="">
+<meta name="robots" content="noindex">
+
+  <style>
+    body {
+      min-height: 200vh;
+      padding: 2rem;
+      font-family: system-ui, sans-serif;
+    }
+  </style>
 </head>
 <body>
   <h1>Hola Mundo</h1>
-
-  <script src="./src/index.js"></script>
-  <script>
-    HTMLInspector.init();
+  <h1>s</h1>
+  <p>Prueba de modo selector.</p>
+  <img src="https://placehold.co/600x400" />
+<br><br>
+<a href="">Href vacio</a>
+<a href="#">Href solo #</a>
+  <script type="module">
+    import './src/index.js';
+    window.HTMLInspector.init();
   </script>
 </body>
 </html>
