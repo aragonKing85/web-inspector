@@ -113,17 +113,17 @@ defineRule({
   /**
    * 4) BUTTON sin type
    */
-  defineRule({
-    id: "button-without-type",
-    group: "dom",
-    message: "El botón no tiene atributo type.",
-    description: "Siempre define type=\"button\" en botones para evitar submits inesperados.",
-    severity: "warn",
-    query: "button:not([type])",
-    test(el) {
-      return false;
-    }
-  }),
+  // defineRule({
+  //   id: "button-without-type",
+  //   group: "dom",
+  //   message: "El botón no tiene atributo type.",
+  //   description: "Siempre define type=\"button\" en botones para evitar submits inesperados.",
+  //   severity: "warn",
+  //   query: "button:not([type])",
+  //   test(el) {
+  //     return false;
+  //   }
+  // }),
 
   /**
    * 5) IDs duplicados
@@ -163,11 +163,20 @@ defineRule({
   id: "interactive-non-button",
   group: "dom",
   message: "Elemento interactivo no es un botón real.",
-  description: "Usa <button> para elementos clicables; mejora accesibilidad y consistencia.",
+  description: "Usa <button> para elementos que no navegan a otro destino.",
   severity: "warn",
   query: "[onclick], [role='button']",
   test(el) {
-    return el.tagName.toLowerCase() === "button";
+    const tag = el.tagName.toLowerCase();
+
+    // ❌ NO marcar si es <a> con href
+    if (tag === "a" && el.hasAttribute("href")) return true;
+
+    // ❌ NO marcar si es un enlace con clases típicas de WP
+    if (el.matches("a.button, a.wp-element-button, a.wp-block-button__link")) return true;
+
+    // OK solo si realmente es un <button>
+    return tag === "button";
   }
 }),
 

@@ -8,7 +8,7 @@ export function createPanel() {
   host.style.right = 0;
   host.style.width = "380px";
   host.style.height = "100vh";
-  host.style.zIndex = "2147483002";
+  host.style.zIndex = "2147483647";
   host.style.pointerEvents = "none";
   host.style.display = "none";
   document.body.appendChild(host);
@@ -20,7 +20,7 @@ export function createPanel() {
 
   const style = document.createElement("style");
   style.textContent = `
-    :host { all: initial; }
+    :host { all: initial;  z-index: 2147483647 !important;}
 
     .panel-wrapper {
       position: absolute;

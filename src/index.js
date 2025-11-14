@@ -13,94 +13,149 @@ const state = {
   rules: null,
   overlay: null,
   panel: null,
-  mounted: false,
-  domActive: false,
-  seoActive: false,
+
+  domResults: null,
+  seoResults: null,
+
+  activeView: "dom",
+  mounted: false
 };
 
+/* ------------------------------------------
+   Ejecutar auditorías UNA sola vez al cargar
+------------------------------------------- */
+function runInitialAudits() {
+  // Ejecutar reglas DOM
+  state.domResults = state.rules.run("dom");
+
+  // Ejecutar reglas SEO
+  state.seoResults = state.rules.run("seo");
+
+  // Actualizar contadores
+  state.bar.updateCounts({
+    dom: state.domResults.overlay.length + state.domResults.panel.length,
+    seo: state.seoResults.overlay.length + state.seoResults.panel.length
+  });
+}
+
+/* ------------------------------------------
+   Mostrar vista DOM
+------------------------------------------- */
+function showDomView() {
+  state.activeView = "dom";
+
+  // Limpiar vista anterior
+  state.overlay.clearAll();
+
+  // Mostrar overlay DOM
+  state.overlay.highlightList(state.domResults.overlay);
+
+  // Ocultar panel SEO
+  state.panel.close();
+
+  // Activar botón DOM
+  state.bar.setActiveButton("dom");
+}
+
+/* ------------------------------------------
+   Mostrar vista SEO
+------------------------------------------- */
+function showSeoView() {
+  state.activeView = "seo";
+
+  // Limpiar vista anterior
+  state.overlay.clearAll();
+
+  // Mostrar overlay SEO
+  state.overlay.highlightList(state.seoResults.overlay);
+
+  // Actualizar panel con errores SEO
+  state.panel.updateList(state.seoResults.panel);
+  state.panel.open();
+
+  // Activar botón SEO
+  state.bar.setActiveButton("seo");
+}
+
+/* ------------------------------------------
+   INIT
+------------------------------------------- */
 function init() {
   if (state.mounted) return;
   state.mounted = true;
+
   state.panel = createPanel();
   state.overlay = new Overlay();
-  // 1. Motor de reglas
+
+  // Motor de reglas
   state.rules = new RuleEngine();
   state.rules.register(rulesDom);
   state.rules.register(rulesSeo);
 
-  // 2. Selector
+  // Selector de elementos
   state.selector = new Selector(state.overlay);
 
-  // 3. Barra UI
+  // Barra inferior
   state.bar = createBar({
     onToggleSelect: (active) => {
       if (active) state.selector.enable();
       else state.selector.disable();
     },
-    onAuditDom: () => {
-      // toggle real
-      state.domActive = !state.domActive;
-        state.panel.close();
-      if (!state.domActive) {
-        state.overlay.clearAll();
-        state.bar.updateCounts({ dom: 0 });
-        return;
-      }
-      const { overlay } = state.rules.run("dom");
-
-      // limpiar SEO del panel
-      state.panel.updateList([]); // vacío
-
-      // mostrar overlay DOM
-      state.overlay.highlightList(overlay);
-
-      // contador DOM solamente
-      state.bar.updateCounts({
-        dom: overlay.length,
-      });
-
-
-    },
-    onAuditSeo: () => {
-      state.seoActive = !state.seoActive;
-
-      if (!state.seoActive) {
-        state.overlay.clearAll();
-        state.panel.close();
-        state.bar.updateCounts({ seo: 0 });
-        return;
-      }
-
-      const { overlay, panel } = state.rules.run("seo");
-
-      // Pintar en pantalla los errores visuales
-      state.overlay.highlightList(overlay);
-
-      // Panel SEO: pasarle todos los errores no visuales
-      state.panel.updateList(panel);
-
-      // Mostrar panel
-      state.panel.open();
-
-      // Actualizar contador
-      state.bar.updateCounts({
-        seo: overlay.length + panel.length,
-      });
-    },
+    onAuditDom: showDomView,
+    onAuditSeo: showSeoView
   });
 
+  // Ejecutamos auditorías una sola vez
+  runInitialAudits();
+
+  // Mostrar DOM por defecto
+  showDomView();
+
+  // Mostrar barra
   state.bar.open();
 }
 
+/* ------------------------------------------
+   DESTROY
+------------------------------------------- */
 function destroy() {
   state.selector?.disable();
   state.selector = null;
+
+  state.overlay?.destroy();
+  state.overlay = null;
+
+  state.panel?.close();
+  state.panel = null;
+
   state.bar?.destroy();
   state.bar = null;
+
   state.rules = null;
+
+  state.domResults = null;
+  state.seoResults = null;
+
+  state.activeView = "dom";
+
   state.mounted = false;
 }
 
 if (!window.HTMLInspector) {
   window.HTMLInspector = { init, destroy };
 }
+
+
+(function startInspector() {
+  function safeInit() {
+    if (!window.HTMLInspector) return;
+    try {
+      window.HTMLInspector.init();
+    } catch (e) {
+      console.error("[Inspector] Init error:", e);
+    }
+  }
+
+  if (document.body) safeInit();
+  else document.addEventListener("DOMContentLoaded", safeInit);
+})();

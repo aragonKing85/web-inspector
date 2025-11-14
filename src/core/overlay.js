@@ -10,7 +10,7 @@ export class Overlay {
     this.host.style.width = "100vw";
     this.host.style.height = "100vh";
     this.host.style.pointerEvents = "none"; // se activa por highlight
-    this.host.style.zIndex = "2147483001";
+    this.host.style.zIndex = "2147483647";
 
     this.shadow = this.host.attachShadow({ mode: "open" });
     this.shadow.appendChild(this._createStyles());

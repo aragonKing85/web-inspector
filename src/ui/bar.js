@@ -12,7 +12,7 @@ export function createBar({
   host.style.left = '0';
   host.style.right = '0';
   host.style.bottom = '0';
-  host.style.zIndex = '2147483000';
+  host.style.zIndex = '2147483647';
   host.style.pointerEvents = 'none';
   document.documentElement.appendChild(host);
 
@@ -32,7 +32,7 @@ export function createBar({
   // Estilos internos
   const style = document.createElement('style');
   style.textContent = `
-    :host { all: initial; }
+    :host { all: initial;  z-index: 2147483647 !important;}
     .insp-bar {
       box-sizing: border-box;
       position: relative;
@@ -162,6 +162,8 @@ btnSelect.style.display = 'none'; //NOTE: No funciona por el momento, se oculta
     if (bSeo) bSeo.textContent = String(seo);
   }
 
+  
+
   function open() {
     host.style.display = '';
   }
@@ -183,6 +185,17 @@ btnSelect.style.display = 'none'; //NOTE: No funciona por el momento, se oculta
     selecting = !!isActive;
     btnSelect.classList.toggle('insp-btn--active', selecting);
   }
+  function setActiveButton(group) {
+  // limpiar
+  btnAuditDom.classList.remove("insp-btn--active");
+  btnAuditSeo.classList.remove("insp-btn--active");
 
-  return { host, shadow, open, close, updateCounts, destroy, setSelectActive };
+  // activar según grupo
+  if (group === "dom") btnAuditDom.classList.add("insp-btn--active");
+  if (group === "seo") btnAuditSeo.classList.add("insp-btn--active");
+}
+
+
+return { host, shadow, open, close, updateCounts, destroy, setSelectActive, setActiveButton };
+
 }
